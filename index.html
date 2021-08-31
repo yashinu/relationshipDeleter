@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="icon" href="https://upload.wikimedia.org/wikipedia/commons/6/6d/Windows_Settings_app_icon.png" type="image/png"/>
+  <title>Relationship Deleter | Discord</title>
+</head>
+<body style="background-color: #2F3136;">
+  <div id="app">
+    <div class="min-h-screen flex justify-center items-center flex-col">
+      <div class="flex flex-col mb-4">
+        <label for="token" class="mr-2 text-white">Token</label>
+        <input type="text" id="token" v-model="token" class="outline-none rounded px-2" placeholder="Account Token" required>
+      </div>
+      <div class="flex flex-col mb-4">
+        <label for="excludes" class="mr-2 text-white">Excludes</label>
+        <input type="text" id="excludes" v-model="excludes" class="outline-none rounded px-2" placeholder="Exclude users (Ex: ID ID2)">
+      </div>
+      <button class="bg-black text-white py-2 px-10 rounded mb-10 hover:bg-gray-900" @click="start()">Start</button>
+      <textarea id="logs" placeholder="Logs" v-model="logs" disabled class=" bg-white resize-none outline-none border rounded w-80 h-48 mx-40"></textarea>
+      <p class="text-center text-white text-lg fixed bottom-0">Developed by <a href="https://github.com/yashinu">Yashinu</a></p>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14"></script>
+  <script>
+    new Vue({
+      el: "#app",
+      data: {
+        token: "",
+        excludes: "",
+        logs: ""
+      },
+      methods: {
+        start() {
+          if (!this.token.length) return alert("You have to specify a valid Discord account token!");
+          if (this.excludes.length && isNaN(this.excludes)) return alert("You have to specify valid users ID!");
+          alert("Started!");
+          let logs = document.getElementById("logs");
+          let excludes = this.excludes.split(" ");
+          let headers = {
+            "Authorization": this.token,
+            "Content-Type": "application/json"
+          };
+          fetch("https://discord.com/api/v9/users/@me/relationships", {
+            method: "GET",
+            headers
+          }).then((response) => response.json()).then((response) => {
+            response.forEach((r, index) => {
+              if (excludes.includes(r.user.id)) return;
+              fetch(`https://discord.com/api/v9/users/@me/relationships/${r.user.id}`, {
+                method: "DELETE",
+                headers,
+                body: "{}"
+              }).then(() => {
+                this.logs += `✔ ${r.user.username}#${r.user.discriminator}\n`;
+                logs.scrollTop = logs.scrollHeight;
+              }).catch(() => {
+                this.logs += `❌ ${r.user.username}#${r.user.discriminator}\n`;
+                logs.scrollTop = logs.scrollHeight;
+              });
+              if (index === (response.length - 1)) alert("Successfully!");
+            });
+          }).catch(() => alert("Token is not working!"));
+        }
+      }
+    });
+  </script>
+</body>
+</html>
