@@ -1,5 +1,5 @@
 # relationshipDeleter
-Discord Delete All Relationship
+Discord Delete All Relationships
 
 Deletes all friendships of your Discord account.
 
